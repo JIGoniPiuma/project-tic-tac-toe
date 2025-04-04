@@ -80,6 +80,7 @@ const GameController = (function () {
 
   function switchPlayer() {
     currentPlayer = currentPlayer === playerX ? playerO : playerX;
+    return currentPlayer;
   }
 
   function makeMove(position) {
@@ -90,9 +91,9 @@ const GameController = (function () {
         //si el juego no termino y se puede colocar un simbolo en el tablero.
 
         let winner = checkWinner();
+        console.log(winner);
         if (winner === false) {
           // si esto no genero un ganador... gameoVer es FALSO y se cambia de jugador.
-
           switchPlayer();
         } else {
           gameOver = true;
@@ -105,7 +106,73 @@ const GameController = (function () {
       }
     }
   }
-  return { makeMove, checkWinner, switchPlayer };
+  function resetGame() {
+    gameOver = false;
+    currentPlayer = playerX;
+  }
+  return { makeMove, checkWinner, switchPlayer, resetGame };
 })();
 
+const DisplayController = (function () {
+  let cells = Array.from(document.querySelectorAll(".cell")); //me devuelve un nodelist que transformo a array.
+  let boardElement = document.getElementById("board");
+  let messageElement = document.getElementById("message");
 
+  const resetElementBoard = () => {
+    Gameboard.resetBoard();
+    GameController.resetGame();
+    cells.forEach((cell) => {
+      cell.innerHTML = "";
+    });
+    // Habilita los clicks nuevamente
+    cells.forEach((cell) => {
+      cell.style.pointerEvents = "auto";
+    });
+    messageElement.textContent = "";
+    // Volvemos a asignar los event listeners
+    play();
+    GameController.gameOver = false; // Esto requiere que gameOver sea accesible
+    currentPlayer = playerX; // Resetear al jugador inicial
+  };
+
+  const showResult = (result) => {
+    if (result === "Tie") {
+      messageElement.textContent = "¡Es un empate!";
+    } else {
+      messageElement.textContent = `¡El ganador es ${result}!`;
+    }
+    // Deshabilitar más clicks
+    cells.forEach((c) => (c.style.pointerEvents = "none"));
+  };
+
+  const play = () => {
+    cells.forEach((cell, index) => {
+      // para cada cell del array Cells, quiero que al hacerle Click (SE DIBUJE UN "SYMBOL" en el Tablero
+      // y Se modifique el Array board)
+      cell.addEventListener(
+        "click",
+        () => {
+          GameController.makeMove(index);
+          const symbol = document.createElement("div");
+          symbol.className = "symbol";
+          symbol.textContent = Gameboard.getBoard()[index];
+
+          cell.innerHTML = ""; // Limpiar antes de agregar
+          cell.appendChild(symbol);
+
+          let winner = GameController.checkWinner();
+          if (winner) {
+            // Deshabilitar más clicks
+            cells.forEach((c) => (c.style.pointerEvents = "none"));
+            showResult(winner);
+          }
+        },
+        { once: true }
+      );
+    });
+  };
+  resetButton.addEventListener("click", resetElementBoard);
+  return { play, resetElementBoard, showResult };
+})();
+
+DisplayController.play();
