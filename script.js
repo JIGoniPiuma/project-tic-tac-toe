@@ -17,9 +17,9 @@ const Gameboard = (function () {
   const setMove = (position, player) => {
     if (board[position] === "") {
       board[position] = player;
-      return true;
+      return true; //se pudo efectuar el movimiento
     } else {
-      return false;
+      return false; //no se pudo
     }
   };
   return { resetBoard, getBoard, setMove }; // estos son los valores publicos de Gameboard.
@@ -60,7 +60,7 @@ const GameController = (function () {
       const [a, b, c] = combo;
       // el for let recorre cada elemento (llamado combo) en winning combinator.
       // Para cada elemento(Combo) hago una destructuración del mismo,
-      // entonces para la primera iteración por ejemplo: a=0,b=1,c=2.
+      // entonces para la primera iteración (por ejemplo): a=0,b=1,c=2.
       // si en la posicición a hay algo y si es lo mismo que en b y c para ALGUNO de los combos. Entonces hay un winner.
       if (board[a] && board[a] === board[b] && board[a] === board[c]) {
         gameOver = true;
@@ -91,17 +91,12 @@ const GameController = (function () {
         //si el juego no termino y se puede colocar un simbolo en el tablero.
 
         let winner = checkWinner();
-        console.log(winner);
+
         if (winner === false) {
           // si esto no genero un ganador... gameoVer es FALSO y se cambia de jugador.
           switchPlayer();
         } else {
           gameOver = true;
-          if (winner === "Tie") {
-            console.log("Es un Empate");
-          } else {
-            console.log(`El ganador es ${winner}`);
-          }
         }
       }
     }
@@ -115,7 +110,7 @@ const GameController = (function () {
 
 const DisplayController = (function () {
   let cells = Array.from(document.querySelectorAll(".cell")); //me devuelve un nodelist que transformo a array.
-  let boardElement = document.getElementById("board");
+
   let messageElement = document.getElementById("message");
 
   const resetElementBoard = () => {
@@ -131,8 +126,6 @@ const DisplayController = (function () {
     messageElement.textContent = "";
     // Volvemos a asignar los event listeners
     play();
-    GameController.gameOver = false; // Esto requiere que gameOver sea accesible
-    currentPlayer = playerX; // Resetear al jugador inicial
   };
 
   const showResult = (result) => {
@@ -142,7 +135,7 @@ const DisplayController = (function () {
       messageElement.textContent = `¡El ganador es ${result}!`;
     }
     // Deshabilitar más clicks
-    cells.forEach((c) => (c.style.pointerEvents = "none"));
+    cells.forEach((cell) => (cell.style.pointerEvents = "none"));
   };
 
   const play = () => {
